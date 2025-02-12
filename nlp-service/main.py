@@ -15,6 +15,7 @@ class PDFData(BaseModel):
 def extract_text_from_pdf(pdf_bytes):
     """
     Extracts text from a PDF using PyMuPDF for selectable text and Tesseract OCR for images.
+    Preserves line structure as it appears in the PDF.
     """
     print("[DEBUG] Extracting text from PDF...")
     try:
@@ -24,10 +25,10 @@ def extract_text_from_pdf(pdf_bytes):
         for page_num, page in enumerate(doc):
             print(f"[DEBUG] Processing page {page_num + 1}/{len(doc)}")
             
-            # Extract selectable text
-            text = page.get_text("text").strip()
-            text_content.append(text)
-            
+            # Extract selectable text (keeping line structure)
+            lines = page.get_text("text").split("\n")
+            text_content.extend(lines)
+
             # Extract images and apply OCR
             for img_index, img in enumerate(page.get_images(full=True)):
                 xref = img[0]
@@ -39,8 +40,11 @@ def extract_text_from_pdf(pdf_bytes):
                 ocr_text = pytesseract.image_to_string(image, config="--psm 6")  # OCR processing
 
                 print(f"[DEBUG] Extracted OCR text from image {img_index + 1} on page {page_num + 1}")
-                text_content.append(ocr_text)
+                
+                # Maintain line-by-line structure for OCR-extracted text
+                text_content.extend(ocr_text.split("\n"))
 
+        # Join all lines with newlines to preserve formatting
         full_text = "\n".join(text_content)
         print(f"[DEBUG] Extracted text length: {len(full_text)} characters")
         return full_text
@@ -53,13 +57,12 @@ async def root():
     """
     Root endpoint to check if the API is running.
     """
-    print("[DEBUG] Root endpoint hit")
     return {"message": "Python NLP service running"}
 
 @app.post("/process_pdfs")
 async def process_pdfs(data: PDFData):
     """
-    Processes the provided PDFs, extracts text, and returns the full text.
+    Processes the provided PDFs, extracts text, and returns structured text.
     """
     try:
         print("[DEBUG] Received PDF processing request")
