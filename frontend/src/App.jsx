@@ -1,45 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 
 function UploadPYQ() {
   const [subject, setSubject] = useState("");
   const [newSubject, setNewSubject] = useState("");
-  const [subjects, setSubjects] = useState([]);
   const [pyqFiles, setPyqFiles] = useState([]);
   const [syllabus, setSyllabus] = useState(null);
-  const [useExistingSyllabus, setUseExistingSyllabus] = useState(false);
-  const [existingSyllabi, setExistingSyllabi] = useState([]);
-  const [topics, setTopics] = useState([]);
-
-  useEffect(() => {
-    // fetchSubjects();
-    // fetchExistingSyllabi();
-  }, []);
-
-  const fetchSubjects = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/subjects");
-      setSubjects(res.data);
-    } catch (error) {
-      console.error("Error fetching subjects:", error);
-    }
-  };
-
-  const fetchExistingSyllabi = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/syllabi");
-      setExistingSyllabi(res.data);
-    } catch (error) {
-      console.error("Error fetching syllabi:", error);
-    }
-  };
+  const [extractedData, setExtractedData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e, type) => {
-    if (type === "pyq") {
-      setPyqFiles([...e.target.files]);
-    } else {
-      setSyllabus(e.target.files[0]);
-    }
+    if (type === "pyq") setPyqFiles([...e.target.files]);
+    else setSyllabus(e.target.files[0]);
   };
 
   const uploadFiles = async () => {
@@ -51,90 +23,69 @@ function UploadPYQ() {
       alert("Please upload at least one PYQ file.");
       return;
     }
-    if (!useExistingSyllabus && !syllabus) {
-      alert("Please upload a syllabus file or select an existing one.");
-      return;
-    }
 
     const formData = new FormData();
     pyqFiles.forEach((file) => formData.append("pyqs", file));
-    if (!useExistingSyllabus) {
-      formData.append("syllabus", syllabus);
-    } else {
-      formData.append("syllabus_id", syllabus);
-    }
+    if (syllabus) formData.append("syllabus", syllabus);
     formData.append("subject", newSubject || subject);
 
     try {
+      setLoading(true);
       const res = await axios.post("http://localhost:5000/api/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
+      // Store extracted text from the response
+      setExtractedData(res.data);
       alert("Files uploaded successfully!");
-      console.log(res.data);
     } catch (error) {
-      console.error("Upload failed:", error);
       alert("Upload failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
+    <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
       <h1>Upload PYQ Papers</h1>
-      
+
       <label>Select Subject:</label>
-      <select value={subject} onChange={(e) => setSubject(e.target.value)}>
-        <option value="">-- Select Subject --</option>
-        {subjects.map((sub, index) => (
-          <option key={index} value={sub}>{sub}</option>
-        ))}
-      </select>
-      
-      <h3>Or Add New Subject:</h3>
       <input
         type="text"
-        placeholder="Enter New Subject"
-        value={newSubject}
+        placeholder="Enter Subject"
+        value={newSubject || subject}
         onChange={(e) => setNewSubject(e.target.value)}
       />
 
       <h3>Upload PYQ Papers:</h3>
       <input type="file" multiple onChange={(e) => handleFileChange(e, "pyq")} />
 
-      {pyqFiles.length > 0 && (
-        <div>
-          <h3>Preview Uploaded PYQ Papers:</h3>
-          <ul>
-            {pyqFiles.map((file, index) => (
-              <li key={index}>
-                <a href={URL.createObjectURL(file)} target="_blank" rel="noopener noreferrer">{file.name}</a>
-              </li>
-            ))}
-          </ul>
+      <h3>Upload Syllabus:</h3>
+      <input type="file" onChange={(e) => handleFileChange(e, "syllabus")} />
+
+      <button onClick={uploadFiles} disabled={loading}>
+        {loading ? "Uploading..." : "Upload"}
+      </button>
+
+      {/* Render Extracted Text */}
+      {extractedData && (
+        <div style={{ marginTop: "20px", padding: "10px", border: "1px solid #ccc" }}>
+          <h2>📚 Extracted Syllabus</h2>
+          <p>{extractedData.syllabus_text}</p>
+
+          <h2>📝 Extracted PYQs</h2>
+          {extractedData.extracted_texts.length > 0 ? (
+            extractedData.extracted_texts.map((text, index) => (
+              <div key={index} style={{ marginBottom: "10px", padding: "10px", border: "1px solid #ccc" }}>
+                <h3>📄 PYQ {index + 1}</h3>
+                <p>{text}</p>
+              </div>
+            ))
+          ) : (
+            <p>No PYQ text extracted.</p>
+          )}
         </div>
       )}
-
-      <h3>Syllabus:</h3>
-      <label>
-        <input
-          type="checkbox"
-          checked={useExistingSyllabus}
-          onChange={() => setUseExistingSyllabus(!useExistingSyllabus)}
-        />
-        Use Existing Syllabus
-      </label>
-      
-      {useExistingSyllabus ? (
-        <select value={syllabus} onChange={(e) => setSyllabus(e.target.value)}>
-          <option value="">-- Select Existing Syllabus --</option>
-          {existingSyllabi.map((s, index) => (
-            <option key={index} value={s._id}>{s.name}</option>
-          ))}
-        </select>
-      ) : (
-        <input type="file" onChange={(e) => handleFileChange(e, "syllabus")} />
-      )}
-
-      <button onClick={uploadFiles}>Upload</button>
     </div>
   );
 }
