@@ -9,7 +9,8 @@ export const processFiles = async (req, res) => {
             return res.status(400).json({ error: "Missing required files" });
         }
 
-        const pyqBuffers = req.files["pyqs"].map(file => file.buffer.toString("base64")); // Convert to base64
+        // Convert files to base64
+        const pyqBuffers = req.files["pyqs"].map(file => file.buffer.toString("base64"));
         const syllabusBuffer = req.files["syllabus"][0].buffer.toString("base64");
 
         console.log("Sending files to Python API...");
@@ -19,19 +20,16 @@ export const processFiles = async (req, res) => {
             syllabus: syllabusBuffer
         });
 
-        const { questions } = response.data;
-        console.log("Questions extracted:", questions);
-        
-        // 🔹 Store extracted questions in MongoDB
-        for (const question of questions) {
-            await TopicModel.findOneAndUpdate(
-                { topic: question },
-                { $inc: { count: 1 } },
-                { upsert: true }
-            );
+        const { syllabus_text, extracted_texts } = response.data;
+        console.log("Extracted Syllabus Text:", syllabus_text);
+        console.log("Extracted PYQ Texts:", extracted_texts);
+
+        // 🔹 Store extracted text in MongoDB
+        for (const extractedText of extracted_texts) {
+            await TopicModel.create({ content: extractedText });
         }
 
-        res.json({ message: "Processed Successfully!", questions });
+        res.json({ message: "Processed Successfully!", syllabus_text, extracted_texts });
     } catch (error) {
         console.error("Error processing files:", error);
         res.status(500).json({ error: "Internal Server Error" });
