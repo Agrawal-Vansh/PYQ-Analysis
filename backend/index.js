@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import fileUploadRoutes from "./routes/fileUploadRoutes.js";
-import mongoose from "mongoose";
+import aiRoutes from "./routes/aiRoutes.js";
 import connectMongodb from "./connection.js";
 
 
@@ -21,6 +21,7 @@ app.use(cors(corsOptions));
 
 
 app.use("/api/upload", fileUploadRoutes);
+app.use("/api/ai", aiRoutes);
 app.get("/",(req, res) => {res.status(200).json({"message":"backend working"});});
-app.listen(5000, () => console.log("Server running on port 5000"));
+app.listen(PORT, () => console.log("Server running on port 5000"));
 connectMongodb(MONGO_URI);
