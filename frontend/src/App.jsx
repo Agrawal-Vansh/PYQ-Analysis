@@ -1,72 +1,26 @@
-import { useState } from "react";
-import axios from "axios";
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LoginPage from "./pages/Login/LoginPage.jsx";
+// import RegisterPage from "./pages/RegisterPage.jsx";
+import PageNotFound from "./pages/PageNotFound/PageNotFound.jsx";
+import UploadPYQ from "./pages/Home/UploadPYQ.jsx";
+import Layout from "./Layout/Homelayout.jsx";
+import RegisterPage from "./pages/Register/RegisterPage.jsx";
 
-function UploadPYQ() {
-  const [subject, setSubject] = useState("");
-  const [pyqFiles, setPyqFiles] = useState([]);
-  const [syllabus, setSyllabus] = useState(null);
-  const [topics, setTopics] = useState([]);
-
-  const handleFileChange = (e, type) => {
-    if (type === "pyq") setPyqFiles([...e.target.files]);
-    else setSyllabus(e.target.files[0]);
-  };
-
-  const fetchTopics = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/upload/most-asked-topics");
-      setTopics(res.data);
-    } catch (error) {
-      console.error("Error fetching topics:", error);
-    }
-  };
-
-  const uploadFiles = async () => {
-    if (!subject || pyqFiles.length === 0 || !syllabus) {
-      alert("Please select a subject, PYQ files, and a syllabus before uploading.");
-      return;
-    }
-
-    const formData = new FormData();
-    pyqFiles.forEach((file) => formData.append("pyqs", file));
-    formData.append("syllabus", syllabus);
-    formData.append("subject", subject);
-    console.log("Uploading files...");
-    
-
-    try {
-      await axios.post("http://localhost:5000/api/upload", formData);
-      alert("Files uploaded successfully!");
-      console.log("Files uploaded successfully!");
-      console.log("Fetching topics...");
-      fetchTopics(); // ✅ Fetch topics only after successful upload
-    } catch (error) {
-      alert("Upload failed. Please try again.");
-    }
-  };
-
+function App() {
   return (
-    <div>
-      <h1>Upload PYQ Papers</h1>
-      <input type="text" placeholder="Enter Subject" onChange={(e) => setSubject(e.target.value)} />
-      <input type="file" multiple onChange={(e) => handleFileChange(e, "pyq")} />
-      <input type="file" onChange={(e) => handleFileChange(e, "syllabus")} />
-      <button onClick={uploadFiles}>Upload</button>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<UploadPYQ />} />
+        </Route>
 
-      {topics.length > 0 && (
-        <>
-          <h2>Most Asked Topics</h2>
-          <ul>
-            {topics.map((t, index) => (
-              <li key={index}>
-                {t.topic} ({t.count} times)
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-    </div>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
-export default UploadPYQ;
+export default App;
