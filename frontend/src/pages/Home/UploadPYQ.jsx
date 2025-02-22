@@ -35,7 +35,7 @@ function UploadPYQ() {
       setError(null);
 
       // Calls only `/api/upload` -> Node.js will call AI API internally
-      const res = await axios.post("http://localhost:5000/api/upload", formData, {
+      const res = await axios.post(`${import.meta.env.VITE_URL}/api/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
