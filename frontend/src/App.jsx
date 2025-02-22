@@ -8,6 +8,7 @@ function UploadPYQ() {
   const [syllabus, setSyllabus] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleFileChange = (e, type) => {
     if (type === "pyq") setPyqFiles([...e.target.files]);
@@ -31,15 +32,20 @@ function UploadPYQ() {
 
     try {
       setLoading(true);
+      setError(null);
+
+      // Calls only `/api/upload` -> Node.js will call AI API internally
       const res = await axios.post("http://localhost:5000/api/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // Store extracted text from the response
+      // Store extracted text and AI-generated questions from Node.js response
       setExtractedData(res.data);
-      alert("Files uploaded successfully!");
+
+      alert("Files uploaded and processed successfully!");
     } catch (error) {
-      alert("Upload failed. Please try again.");
+      console.error("Upload failed:", error);
+      setError("Upload failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -67,13 +73,15 @@ function UploadPYQ() {
         {loading ? "Uploading..." : "Upload"}
       </button>
 
-      {/* Render Extracted Text */}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {/* Render Extracted Data */}
       {extractedData && (
         <div style={{ marginTop: "20px", padding: "10px", border: "1px solid #ccc" }}>
           <h2>📚 Extracted Syllabus</h2>
           <p>{extractedData.syllabus_text}</p>
 
-          <h2>📝 Extracted PYQs</h2>
+          <h2>📝 Extracted PYQ Texts</h2>
           {extractedData.extracted_texts.length > 0 ? (
             extractedData.extracted_texts.map((text, index) => (
               <div key={index} style={{ marginBottom: "10px", padding: "10px", border: "1px solid #ccc" }}>
@@ -83,6 +91,17 @@ function UploadPYQ() {
             ))
           ) : (
             <p>No PYQ text extracted.</p>
+          )}
+
+          <h2>🧠 AI-Extracted Questions</h2>
+          {extractedData.extracted_questions.length > 0 ? (
+            <ul>
+              {extractedData.extracted_questions.map((question, index) => (
+                <li key={index}>{question}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>No questions extracted by AI.</p>
           )}
         </div>
       )}
