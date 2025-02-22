@@ -1,127 +1,96 @@
-import { useState } from "react";
-import axios from "axios";
-import Graph from "../../Components/BarGraph/BarGraph";
+import React, { useState } from 'react';
+import axios from 'axios';
+import pdfToText from 'react-pdftotext';
+import Graph from '../../Components/BarGraph/BarGraph';
 
 function Home() {
-  const [subject, setSubject] = useState("");
-  const [pyqFiles, setPyqFiles] = useState([]);
-  const [syllabus, setSyllabus] = useState(null);
-  const [extractedData, setExtractedData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [pdfText, setPdfText] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
 
-  const handleFileChange = (e, type) => {
-    const files = Array.from(e.target.files);
-    if (type === "pyq") setPyqFiles(files);
-    else setSyllabus(files[0]);
-  };
+  const extractText = (event) => {
+    const file = event.target.files[0];
 
-  const uploadFiles = async () => {
-    if (!subject.trim()) {
-      alert("Please enter a subject before uploading.");
+    if (!file) {
+      console.error("No file selected.");
       return;
     }
-    if (pyqFiles.length === 0) {
-      alert("Please upload at least one PYQ file.");
-      return;
-    }
-
-    const formData = new FormData();
-    pyqFiles.forEach((file) => formData.append("pyqs", file));
-    if (syllabus) formData.append("syllabus", syllabus);
-    formData.append("subject", subject);
 
     try {
-      setLoading(true);
-      setError(null);
-
-      const res = await axios.post("http://localhost:8000/api/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      setExtractedData(res.data);
-      alert("Files uploaded and processed successfully!");
-    } catch (err) {
-      console.error("Upload failed:", err);
-      setError(err.response?.data?.message || "Upload failed. Please try again.");
-    } finally {
-      setLoading(false);
+      console.log("Starting to extract text from the PDF...");
+      pdfToText(file)
+        .then(text => {
+          console.log("Text extracted successfully.");
+          setPdfText(text);
+          sendTextToAI(text);
+        })
+        .catch(error => {
+          console.error("Error during text extraction:", error);
+        });
+    } catch (error) {
+      console.error("An error occurred while processing the PDF file:", error);
     }
+  };
+
+  const sendTextToAI = async (extractedText) => {
+    try {
+      console.log("Sending extracted text to AI...");
+      const response = await axios.post(`${import.meta.env.VITE_URL}/api/ai/extract`, { extractedText });
+      if (response.data && response.data.ans) {
+        console.log("AI Response:", response.data.ans);
+        setAiResponse(response.data.ans);
+      } else {
+        console.error("No response from AI.");
+      }
+    } catch (error) {
+      console.error("Error sending text to AI:", error);
+    }
+  };
+
+  const renderTextLines = (text) => {
+    const lines = text.split('\n');
+    return lines.map((line, index) => (
+      <p key={index} className="text-gray-300 mb-2">{line}</p>
+    ));
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-50 p-8">
-      <h1 className="text-4xl font-bold text-center text-white bg-red-600 px-8 py-3 rounded-lg shadow-lg">
-        Upload PYQ Papers
+    <div className="min-h-screen flex flex-col items-center bg-[#1E1E2E] p-8">
+      {/* Header */}
+      <h1 className="text-4xl font-bold text-white px-8 py-3 rounded-lg shadow-lg 
+                     bg-gradient-to-r from-[#3B82F6] to-[#9333EA]">
+        PDF Text Extractor
       </h1>
 
-      <div className="bg-white p-6 my-6 w-full max-w-lg shadow-lg rounded-xl border border-gray-200">
-        <label className="block text-lg font-semibold mb-2 text-gray-700">Select Subject:</label>
-        <input
-          type="text"
-          placeholder="Enter Subject"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-400 focus:outline-none"
+      {/* Upload Section */}
+      <div className="bg-[#2A2A3A] p-6 my-6 w-full max-w-lg shadow-lg rounded-xl border border-[#3B3B4F]">
+        <h3 className="text-lg font-semibold text-gray-200">Upload PDF:</h3>
+        <input 
+          type="file" 
+          accept="application/pdf" 
+          onChange={extractText}
+          className="w-full border p-2 rounded-md mt-2 bg-[#3B3B4F] text-gray-300 focus:ring-2 focus:ring-[#3B82F6] focus:outline-none"
         />
-
-        <h3 className="text-lg font-semibold mt-4 text-gray-700">Upload PYQ Papers:</h3>
-        <input
-          type="file"
-          multiple
-          onChange={(e) => handleFileChange(e, "pyq")}
-          className="w-full border p-2 rounded-md mt-2 bg-gray-50 focus:ring-2 focus:ring-red-300 focus:outline-none"
-        />
-
-        <h3 className="text-lg font-semibold mt-4 text-gray-700">Upload Syllabus:</h3>
-        <input
-          type="file"
-          onChange={(e) => handleFileChange(e, "syllabus")}
-          className="w-full border p-2 rounded-md mt-2 bg-gray-50 focus:ring-2 focus:ring-red-300 focus:outline-none"
-        />
-
-        <button
-          onClick={uploadFiles}
-          disabled={loading}
-          className="mt-4 w-full bg-red-600 text-white py-3 rounded-md font-semibold hover:bg-red-700 transition-all duration-300 shadow-md disabled:bg-gray-400"
-        >
-          {loading ? "Uploading..." : "Upload"}
-        </button>
-
-        {error && <p className="text-red-600 text-center mt-3">{error}</p>}
       </div>
 
-      <Graph />
-
-      {extractedData && (
-        <div className="mt-6 w-full max-w-2xl bg-white p-6 shadow-lg rounded-xl border border-gray-200">
-          <h2 className="text-2xl font-bold text-center text-red-600">📚 Extracted Syllabus</h2>
-          <p className="mt-2 text-gray-700 p-3 border rounded bg-gray-50">{extractedData.syllabus_text}</p>
-
-          <h2 className="text-2xl font-bold text-center text-red-600 mt-6">📝 Extracted PYQ Texts</h2>
-          {extractedData.extracted_texts.length > 0 ? (
-            extractedData.extracted_texts.map((text, index) => (
-              <div key={index} className="mt-2 p-3 bg-gray-100 border rounded">
-                <h3 className="font-semibold">📄 PYQ {index + 1}</h3>
-                <p>{text}</p>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-600">No PYQ text extracted.</p>
-          )}
-
-          <h2 className="text-2xl font-bold text-center text-red-600 mt-6">🧠 AI-Extracted Questions</h2>
-          {extractedData.extracted_questions.length > 0 ? (
-            <ul className="list-disc list-inside mt-2 text-gray-700">
-              {extractedData.extracted_questions.map((question, index) => (
-                <li key={index} className="mt-1">{question}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-center text-gray-600">No questions extracted by AI.</p>
-          )}
+      {/* Loading Message */}
+      {pdfText && !aiResponse && (
+        <div className="mt-6 w-full max-w-2xl bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
+          <h2 className="text-2xl font-bold text-center text-[#3B82F6]">Loading......</h2>
         </div>
       )}
+
+      {/* AI Response Section */}
+      {aiResponse && (
+        <div className="mt-6 w-full max-w-2xl bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
+          <h2 className="text-2xl font-bold text-center text-[#3B82F6]">🧠 AI-Processed Response</h2>
+          <div className="mt-2 text-gray-300 p-3 border rounded bg-[#3B3B4F]">
+            {renderTextLines(aiResponse)}
+          </div>
+        </div>
+      )}
+
+      {/* Graph Component */}
+      <Graph />
     </div>
   );
 }
