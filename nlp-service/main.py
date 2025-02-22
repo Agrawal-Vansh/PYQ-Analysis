@@ -5,6 +5,7 @@ import base64
 import io
 import pytesseract
 from PIL import Image
+import uvicorn  
 
 app = FastAPI()
 
@@ -83,3 +84,6 @@ async def process_pdfs(data: PDFData):
     except Exception as e:
         print(f"[ERROR] Failed to process PDFs: {str(e)}")
         return {"error": f"Failed to process PDFs: {str(e)}"}
+    
+if __name__ == "__main__":
+    uvicorn.run(app, port=5000)
