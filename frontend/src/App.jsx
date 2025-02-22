@@ -1,18 +1,17 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/Login/LoginPage.jsx";
-// import RegisterPage from "./pages/RegisterPage.jsx";
 import PageNotFound from "./pages/PageNotFound/PageNotFound.jsx";
-import UploadPYQ from "./pages/Home/UploadPYQ.jsx";
 import Layout from "./Layout/Homelayout.jsx";
 import RegisterPage from "./pages/Register/RegisterPage.jsx";
+import Home from "./pages/Home/Home.jsx";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<UploadPYQ />} />
+          <Route path="/" element={<Home />} />
         </Route>
 
         <Route path="/login" element={<LoginPage />} />
