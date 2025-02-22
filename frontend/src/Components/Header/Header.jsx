@@ -1,10 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+    const navigate = useNavigate();
     return (
-        <header className="bg-gray-900 text-gray-100 py-4 shadow-lg">
+        <header className="bg-gray-800 text-gray-100 py-4 shadow-lg">
             <div className="container mx-auto flex flex-wrap items-center justify-between px-5">
-                {/* Logo Section */}
                 <a className="flex items-center text-gray-100 hover:text-gray-300">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -31,10 +32,10 @@ const Header = () => {
 
                 {/* Buttons */}
                 <div className="flex items-center space-x-4">
-                    <button className="btn">
+                    <button className="btn" onClick={() => navigate("/register")}>
                         Register
                     </button>
-                    <button className="btn">
+                    <button className="btn" onClick={() => navigate("/login")}>
                         Login
                     </button>
                 </div>

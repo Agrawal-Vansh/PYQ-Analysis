@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import List
 import fitz  # PyMuPDF
 import base64
 import io
@@ -9,7 +10,7 @@ from PIL import Image
 app = FastAPI()
 
 class PDFData(BaseModel):
-    pyq_files: list[str]  # List of base64-encoded PDFs
+    pyq_files: List[str]  # List of base64-encoded PDFs
     syllabus: str         # Base64-encoded syllabus PDF
 
 def extract_text_from_pdf(pdf_bytes):
