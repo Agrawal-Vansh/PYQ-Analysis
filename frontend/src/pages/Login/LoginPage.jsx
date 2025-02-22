@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-// import { handleError, handleSuccess } from "../utils";
+import { handleError, handleSuccess } from "../../utils";
 import axios from "axios";
 
 function LoginPage() {
@@ -45,7 +45,7 @@ function LoginPage() {
 
       handleSuccess(message);
       setTimeout(() => {
-        navigate("/home");
+        navigate("/");
       }, 1000);
     } catch (error) {
       handleError(
@@ -85,7 +85,7 @@ function LoginPage() {
       // Handle success (show message and navigate)
       handleSuccess(message);
       setTimeout(() => {
-        navigate("/home");
+        navigate("/");
       }, 1000);
     } catch (error) {
       handleError("Google login failed: " + error.message);

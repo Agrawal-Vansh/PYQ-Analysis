@@ -5,6 +5,7 @@ import LoginPage from "./pages/Login/LoginPage.jsx";
 import PageNotFound from "./pages/PageNotFound/PageNotFound.jsx";
 import UploadPYQ from "./pages/Home/UploadPYQ.jsx";
 import Layout from "./Layout/Homelayout.jsx";
+import RegisterPage from "./pages/Register/RegisterPage.jsx";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         </Route>
 
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>
