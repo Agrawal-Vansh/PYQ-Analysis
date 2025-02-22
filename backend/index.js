@@ -5,7 +5,7 @@ import fileUploadRoutes from "./routes/fileUploadRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import connectMongodb from "./connection.js";
 import authRoutes from "./routes/authRoutes.js"
-
+import userRoutes from "./routes/userRoutes.js";
 dotenv.config();
 const PORT=process.env.PORT || 5000;
 const MONGO_URI=process.env.MONGO_URI;
@@ -31,6 +31,7 @@ app.use(cors(corsOptions));
 app.use('/auth',authRoutes);
 app.use("/api/upload", fileUploadRoutes);
 app.use("/api/ai", aiRoutes);
+app.use('/api/user', userRoutes);
 app.get("/",(req, res) => {res.status(200).json({"message":"backend working"});});
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
