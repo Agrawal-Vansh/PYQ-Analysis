@@ -14,10 +14,35 @@ function Home() {
   const [potentialQuestions, setPotentialQuestions] = useState([]);
   const [fileList, setFileList] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [bookmarkedQuestions, setBookmarkedQuestions] = useState(new Set());
+  const [bookmarkedQuestions, setBookmarkedQuestions] = useState([]);
   const [showError, setShowError] = useState(false);
   const [summary, setSummary] = useState('');
   const [selectedTopic, setSelectedTopic] = useState('');
+
+  const saveBookMarkedQuestions = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (bookmarkedQuestions.length === 0) {
+        console.warn("No bookmarked questions to send");
+        return;
+      }
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_URL}/api/user/add`,
+        {
+          subjectName: selectedSubject,
+          questions: [...bookmarkedQuestions], // Ensure we pass a new array
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      console.log("Success:", response.data);
+    } catch (err) {
+      console.error("Error:", err.response?.data || err.message);
+    }
+  }
 
   const extractText = async (event) => {
     const files = event.target.files;
@@ -102,16 +127,14 @@ function Home() {
     }
   };
 
-  const toggleBookmark = (questionIndex) => {
-    setBookmarkedQuestions(prevState => {
-      const newState = new Set(prevState);
-      if (newState.has(questionIndex)) {
-        newState.delete(questionIndex);
-      } else {
-        newState.add(questionIndex);
-      }
-      return newState;
-    });
+  const toggleBookmark = (question) => {
+    setBookmarkedQuestions((prev) =>
+      prev.includes(question)
+        ? prev.filter((q) => q !== question) // Remove from bookmarks
+        : [...prev, question] // Add to bookmarks
+    );
+
+    console.log("Bookmarked Questions:", bookmarkedQuestions);
   };
 
   const renderQuestions = (text) => {
@@ -122,8 +145,8 @@ function Home() {
         <Question
           key={index}
           question={question}
-          isBookmarked={bookmarkedQuestions.has(index)}
-          onBookmarkToggle={() => toggleBookmark(index)}
+          isBookmarked={bookmarkedQuestions.includes(question)}
+          onBookmarkToggle={() => toggleBookmark(question)}
         />
       )
     ));
@@ -151,12 +174,12 @@ function Home() {
 
 
 
-   // Function to handle the change of the selected topic
-   const handleTopicChange = (event) => {
-     setSelectedTopic(event.target.value);
-   };
+  // Function to handle the change of the selected topic
+  const handleTopicChange = (event) => {
+    setSelectedTopic(event.target.value);
+  };
 
-   const topics = [
+  const topics = [
     'CPU Scheduling',
     'System Programming',
     'Deadlock',
@@ -178,7 +201,7 @@ function Home() {
         topic: selectedTopic
       });
       console.log(response);
-      
+
       if (response.data) {
         // Exclude the first item (index 0) from the array
         const filteredSummary = response.data.ans.slice(1);
@@ -243,6 +266,12 @@ function Home() {
         {aiResponse && renderQuestions(aiResponse)}
       </div>
 
+      <button
+        onClick={() => saveBookMarkedQuestions()}
+        className="px-4 py-2 bg-[#3B82F6] text-white rounded-md shadow-md mt-4 hover:bg-[#2563EB]">
+        Save BookMarked Questions
+      </button>
+
       {aiResponse && (
         <button
           onClick={() => {
@@ -275,63 +304,63 @@ function Home() {
       {aiResponse && <Graph />}
       {showError && <ErrorPopUp onClose={() => setShowError(false)} />}
 
-     {    aiResponse &&
-      <div className="min-h-screen flex flex-col items-center bg-[#1E1E2E] p-8">
-      <h1 className="text-4xl font-bold text-white px-8 py-3 rounded-lg shadow-lg bg-gradient-to-r from-[#3B82F6] to-[#9333EA]">
-        Topic Summary Generator
-      </h1>
+      {aiResponse &&
+        <div className="min-h-screen flex flex-col items-center bg-[#1E1E2E] p-8">
+          <h1 className="text-4xl font-bold text-white px-8 py-3 rounded-lg shadow-lg bg-gradient-to-r from-[#3B82F6] to-[#9333EA]">
+            Topic Summary Generator
+          </h1>
 
-      {/* Topic Selection Dropdown */}
-      <div className="mt-6 w-full max-w-lg bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
-        <h3 className="text-lg font-semibold text-gray-200">Select a Topic:</h3>
-        <select
-          value={selectedTopic}
-          onChange={handleTopicChange}
-          className="w-full border p-2 rounded-md mt-2 bg-[#3B3B4F] text-gray-300 focus:ring-2 focus:ring-[#3B82F6] focus:outline-none"
-        >
-          <option value="">-- Choose a Topic --</option>
-          {topics.map((topic, index) => (
-            <option key={index} value={topic}>
-              {topic}
-            </option>
-          ))}
-        </select>
-      </div>
+          {/* Topic Selection Dropdown */}
+          <div className="mt-6 w-full max-w-lg bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
+            <h3 className="text-lg font-semibold text-gray-200">Select a Topic:</h3>
+            <select
+              value={selectedTopic}
+              onChange={handleTopicChange}
+              className="w-full border p-2 rounded-md mt-2 bg-[#3B3B4F] text-gray-300 focus:ring-2 focus:ring-[#3B82F6] focus:outline-none"
+            >
+              <option value="">-- Choose a Topic --</option>
+              {topics.map((topic, index) => (
+                <option key={index} value={topic}>
+                  {topic}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      {/* Button to Generate Summary */}
-      <button
-        onClick={generateSummary}
-        className="px-4 py-2 bg-[#3B82F6] text-white rounded-md shadow-md mt-4 hover:bg-[#2563EB]"
-      >
-        Generate Summary
-      </button>
+          {/* Button to Generate Summary */}
+          <button
+            onClick={generateSummary}
+            className="px-4 py-2 bg-[#3B82F6] text-white rounded-md shadow-md mt-4 hover:bg-[#2563EB]"
+          >
+            Generate Summary
+          </button>
 
-      {/* Loading Spinner */}
-      {loading && (
-        <div className="mt-6 w-full max-w-2xl p-6 transition-all duration-300">
-        <h2 className="text-5xl font-bold text-center text-[#70a7ff] animate-pulse">
-          Loading{dots}
-        </h2>
-      </div>
-      )}
+          {/* Loading Spinner */}
+          {loading && (
+            <div className="mt-6 w-full max-w-2xl p-6 transition-all duration-300">
+              <h2 className="text-5xl font-bold text-center text-[#70a7ff] animate-pulse">
+                Loading{dots}
+              </h2>
+            </div>
+          )}
 
-      {/* Summary Display */}
-      {summary.length > 0 && !loading && (
-        <div className="mt-6 w-full max-w-2xl bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
-        <h3 className="text-xl font-semibold text-[#3B82F6] mb-4">Summary for {selectedTopic}:</h3>
-        <ul className="list-disc p-4 space-y-2 text-lg">
-          {summary.map((item, index) => (
-            <li key={index} className="text-gray-300 mb-2">
-              <ReactMarkdown>{item}</ReactMarkdown>
-            </li>
-          ))}
-        </ul>
-      </div>
-      )}
+          {/* Summary Display */}
+          {summary.length > 0 && !loading && (
+            <div className="mt-6 w-full max-w-2xl bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
+              <h3 className="text-xl font-semibold text-[#3B82F6] mb-4">Summary for {selectedTopic}:</h3>
+              <ul className="list-disc p-4 space-y-2 text-lg">
+                {summary.map((item, index) => (
+                  <li key={index} className="text-gray-300 mb-2">
+                    <ReactMarkdown>{item}</ReactMarkdown>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      }
     </div>
-    }
-    </div>
-    
+
   );
 }
 

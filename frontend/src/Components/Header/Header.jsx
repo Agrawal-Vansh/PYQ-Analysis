@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
 import { handleSuccess, handleError } from "../../utils";
 import { ToastContainer } from "react-toastify";
@@ -10,6 +11,7 @@ const Header = () => {
     const [profilePhoto, setProfilePhoto] = useState(null);
     const [showLogout, setShowLogout] = useState(false); // Added state for showing logout
     const navigate = useNavigate();
+    const location = useLocation();
 
     // Fetch user data from localStorage initially
     useEffect(() => {
@@ -63,8 +65,8 @@ const Header = () => {
                     {loggedInUser && (
                         <>
                             {/* Dashboard Button */}
-                            <button className="btn" onClick={() => navigate("/dashboard")}>
-                                Dashboard
+                            <button className="btn" onClick={() => navigate(location.pathname === "/dashboard" ? "/" : "/dashboard")}>
+                                {location.pathname === "/dashboard" ? "Home" : "Dashboard"}
                             </button>
                             {/* Profile Photo or Icon */}
                             <div className="relative">
