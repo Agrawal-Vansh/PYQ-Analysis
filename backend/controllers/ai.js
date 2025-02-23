@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export const handleAiResponse = async (req, res) => {
   try {
-    const { extractedText } = req.body; // Extracted text from the scanned PDF
+    const { extractedText } = req.body; 
     
     if (!extractedText) {
       return res.status(400).json({ error: "No extracted text provided" });
@@ -11,7 +11,7 @@ export const handleAiResponse = async (req, res) => {
     const genAI = new GoogleGenerativeAI(process.env.API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    // Create structured prompt
+
     const prompt = `
 
       Given the following extracted text from a scanned exam paper, your task is to analyze the text 
@@ -29,13 +29,10 @@ export const handleAiResponse = async (req, res) => {
     console.log("Sending prompt to Gemini...");
 
     const result = await model.generateContent(prompt);
-    const responseText = result.response.text(); // Extract AI's response
+    const responseText = result.response.text(); 
 
     // console.log("Gemini Response:", responseText);
     console.log("Gemini Response Received");
-    
-    
-    // Parse JSON response
 
     return res.status(200).json({ans:responseText});
   } catch (err) {
@@ -46,7 +43,7 @@ export const handleAiResponse = async (req, res) => {
 
 export const generatePotentialQuestions = async (req, res) => {
   try {
-    const { questions } = req.body; // Extracted text from the scanned PDF
+    const { questions } = req.body; 
     
     if (!questions) {
       return res.status(400).json({ error: "No questions provided" });
@@ -55,7 +52,6 @@ export const generatePotentialQuestions = async (req, res) => {
     const genAI = new GoogleGenerativeAI(process.env.API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    // Create structured prompt
     const prompt = `
 
       Generate  few  similar (Potential Questions) for upcoming exam based on these pyqs 
@@ -78,8 +74,41 @@ export const generatePotentialQuestions = async (req, res) => {
     .map(question => question.trim()) // Trim any extra spaces
     .filter(question => question.length > 0); // Filter out any empty strings
 
-  // Send the array of potential questions as the response
   return res.status(200).json({ ans: potentialQuestions });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error", details: err.message });
+  }
+};
+
+
+export const generateTopicSummary = async (req, res) => {
+  try {
+    const { topic } = req.body; 
+    
+    if (!topic) {
+      return res.status(400).json({ error: "No topic provided" });
+    }
+
+    const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+    const prompt = `
+      Generate a summary for ${topic} to make an undergraduate understand these concepts in 10 pointers
+      
+    `;
+
+    console.log("Sending prompt to Gemini...");
+
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();  
+
+    console.log("Gemini Response Received");
+    
+    const response = responseText .split('\n')
+    .map(question => question.trim()) 
+    .filter(question => question.length > 0); 
+    return res.status(200).json({ ans: response });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal Server Error", details: err.message });
