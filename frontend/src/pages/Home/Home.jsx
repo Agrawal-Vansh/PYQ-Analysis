@@ -26,6 +26,7 @@ function Question({ question, onBookmarkToggle, isBookmarked }) {
 function Home() {
   const [pdfText, setPdfText] = useState("");
   const [aiResponse, setAiResponse] = useState("");
+  const [potentialQuestions, setPotentialQuestions] = useState([]);
   const [fileList, setFileList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState(new Set()); // Track bookmarked questions
@@ -84,6 +85,29 @@ function Home() {
       console.error("Error sending text to AI:", error);
     } finally {
       setLoading(false); // Stop loading after AI response
+    }
+  };
+
+  const generatePotentialQuestions = async () => {
+    try {
+      setLoading(true);
+      console.log("Sending request for potential questions...");
+      const response = await axios.post(`${import.meta.env.VITE_URL}/api/ai/potentialQuestions`, {  "questions" : [
+        "What is the operating system?",
+        "How does virtual memory work?",
+        "What is the difference between a process and a thread?"
+      ]
+      });
+      if (response.data && response.data.ans) {
+        console.log("Potential Questions Response:", response.data.ans);
+        setPotentialQuestions(response.data.ans); // Set the potential questions
+      } else {
+        console.error("No response from AI for potential questions.");
+      }
+    } catch (error) {
+      console.error("Error generating potential questions:", error);
+    } finally {
+      setLoading(false); // Stop loading after the API response
     }
   };
 
@@ -160,17 +184,43 @@ function Home() {
         {aiResponse && renderQuestions(aiResponse)} {/* Render each question in its own div */}
       </div>
 
-      {/* checking to reduce API Load  */}
-      {/* <div className="mt-6 w-full max-w-2xl">
-        Render each question in its own div
-        {renderQuestions(pdfText)} 
-      </div> */}
+      {/* Potential Questions Button */}
+      {aiResponse && <button
+        onClick={generatePotentialQuestions}
+        className="px-4 py-2 bg-[#9333EA] text-white rounded-md shadow-md mt-4 hover:bg-[#7E22CE]"
+      >
+        Generate Potential Questions
+      </button>}
+
+      {/* Render Potential Questions */}
+      <div className="mt-6 w-full max-w-2xl">
+        { potentialQuestions.length > 0 && (
+          <div>
+            <h2 className="text-xl font-bold text-[#3B82F6]">Generated Potential Questions:</h2>
+            {potentialQuestions.map((question, index) => (
+              <Question
+                key={index}
+                question={question.replace("* ", "")} // Remove leading asterisk from response
+                isBookmarked={bookmarkedQuestions.has(index)} // Check if this question is bookmarked
+                onBookmarkToggle={() => toggleBookmark(index)} // Toggle bookmark state
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Graph Component */}
-      {aiResponse &&     <Graph />}
-   
+      {aiResponse && <Graph />}
     </div>
   );
 }
 
 export default Home;
+
+
+
+{/* checking to reduce API Load  */}
+{/* <div className="mt-6 w-full max-w-2xl">
+  Render each question in its own div
+  {renderQuestions(pdfText)} 
+</div> */}

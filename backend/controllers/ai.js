@@ -43,3 +43,45 @@ export const handleAiResponse = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: err.message });
   }
 };
+
+export const generatePotentialQuestions = async (req, res) => {
+  try {
+    const { questions } = req.body; // Extracted text from the scanned PDF
+    
+    if (!questions) {
+      return res.status(400).json({ error: "No questions provided" });
+    }
+
+    const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+    // Create structured prompt
+    const prompt = `
+
+      Generate  few  similar (Potential Questions) for upcoming exam based on these pyqs 
+      ${questions.join(',')}
+      and return an array of potential questions
+    I do not want python code from you but the reponse array only
+      
+    `;
+
+    console.log("Sending prompt to Gemini...");
+
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();  
+
+    // console.log("Gemini Response:", responseText);
+    console.log("Gemini Response Received");
+    
+    const potentialQuestions = responseText
+    .split('\n') // Split by newline
+    .map(question => question.trim()) // Trim any extra spaces
+    .filter(question => question.length > 0); // Filter out any empty strings
+
+  // Send the array of potential questions as the response
+  return res.status(200).json({ ans: potentialQuestions });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error", details: err.message });
+  }
+};
