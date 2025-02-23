@@ -9,6 +9,7 @@ function Dashboard() {
   const [loggedInUser, setLoggedInUser] = useState("");
   const [userDetails, setUserDetails] = useState({});
   const [error, setError] = useState(null);
+  const [questionCount, setQuestionCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,6 +27,15 @@ function Dashboard() {
             }
           );
           setUserDetails(response.data);
+
+          // Calculate total number of questions
+          if (response.data.subjects) {
+            const totalQuestions = Object.values(response.data.subjects).reduce(
+              (acc, questions) => acc + (Array.isArray(questions) ? questions.length : 0),
+              0
+            );
+            setQuestionCount(totalQuestions);
+          }
         } else {
           setError({ message: "User not authenticated" });
         }
@@ -58,7 +68,7 @@ function Dashboard() {
 
     return (
       <div className="mt-4">
-        <h3 className="font-semibold text-white">Subjects</h3>
+        <h3 className="text-center text-white text-3xl font-bold mb-4">Subjects</h3>
         <ul className="list-disc pl-5 text-gray-300">
           {Object.entries(userDetails.subjects).map(([subject, questions]) => (
             <li key={subject} className="mb-4">
@@ -70,7 +80,7 @@ function Dashboard() {
                   ))}
                 </ul>
               ) : (
-                <p>No questions available for {subject}</p>
+                <p className="text-gray-400">No questions available for {subject}</p>
               )}
             </li>
           ))}
@@ -91,43 +101,48 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-md w-80 text-center">
-        <div className="flex justify-center mb-6">
-          {userDetails.profilePhoto ? (
-            <img
-              src={userDetails.profilePhoto}
-              alt="Profile"
-              className="w-24 h-24 rounded-full object-cover"
-            />
-          ) : (
-            <FaUserCircle className="text-gray-400 w-24 h-24" />
-          )}
+    <div className="min-h-screen flex flex-col items-center justify-evenly bg-gray-900 p-6">
+      <div className="w-full max-w-4xl bg-gray-800 rounded-lg shadow-md p-6 flex">
+        {/* Profile Section (Left) */}
+        <div className="w-1/3 flex flex-col items-center border-r border-gray-700 pr-6">
+          <div className="flex justify-center mb-6">
+            {userDetails.profilePhoto ? (
+              <img
+                src={userDetails.profilePhoto}
+                alt="Profile"
+                className="w-24 h-24 rounded-full object-cover border-4 border-gray-600"
+              />
+            ) : (
+              <FaUserCircle className="text-gray-400 w-24 h-24" />
+            )}
+          </div>
+          <h1 className="text-xl font-semibold text-white">{loggedInUser}</h1>
+          <button
+            onClick={handleLogout}
+            className="mt-4 w-full py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition duration-300 shadow-md"
+          >
+            Log Out
+          </button>
         </div>
-        <h1 className="text-2xl font-semibold text-white mb-6">
-          {loggedInUser}
-        </h1>
-        <button
-          onClick={handleLogout}
-          className="w-full py-2 bg-red-600 text-white font-bold rounded hover:bg-red-700 transition duration-300"
-        >
-          Log Out
-        </button>
-      </div>
 
-      <br />
-      <br />
-      <div className="w-full max-w-3xl bg-gray-800 rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4 text-white">User Details</h2>
-        <div className="bg-gray-700 p-4 rounded-lg shadow-sm">
-          {userDetails && (
-            <div>
-              <p className="text-sm text-gray-300">Email: {userDetails.email}</p>
-              {renderSubjects()}
-            </div>
-          )}
+        {/* User Details Section (Right) */}
+        <div className="w-2/3 pl-6">
+          <h2 className="text-2xl font-semibold text-white mb-4">User Details</h2>
+          <div>
+            {userDetails && (
+              <div>
+                <p className="shadow-md rounded-lg p-4 bg-gray-600 text-lg text-gray-300 mb-10">
+                  <strong>Email :</strong> {userDetails.email}
+                </p>
+                <p className="shadow-md rounded-lg p-4 bg-gray-600 text-lg text-gray-300 mb-10">
+                  <strong>Question Count :</strong> {questionCount}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+      <div className="bg-gray-800 p-4 rounded-lg shadow-md">{renderSubjects()}</div>
       <ToastContainer />
     </div>
   );

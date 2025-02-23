@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
 import { handleSuccess, handleError } from "../../utils";
 import { ToastContainer } from "react-toastify";
@@ -11,6 +12,7 @@ const Header = () => {
     const [showLogout, setShowLogout] = useState(false); // Added state for showing logout
     const navigate = useNavigate();
     const profileRef = useRef(null); // Ref for the profile icon/logout button
+    const location = useLocation();
 
     // Fetch user data from localStorage initially
     useEffect(() => {
@@ -81,8 +83,8 @@ const Header = () => {
                     {loggedInUser && (
                         <>
                             {/* Dashboard Button */}
-                            <button className="btn" onClick={() => navigate("/dashboard")}>
-                                Dashboard
+                            <button className="btn" onClick={() => navigate(location.pathname === "/dashboard" ? "/" : "/dashboard")}>
+                                {location.pathname === "/dashboard" ? "Home" : "Dashboard"}
                             </button>
                             {/* Profile Photo or Icon */}
                             <div className="relative" ref={profileRef}>
@@ -91,12 +93,12 @@ const Header = () => {
                                         src={profilePhoto}
                                         alt="Profile"
                                         className="rounded-full object-cover w-12 h-12 cursor-pointer"
-                                        onClick={toggleLogout} // Toggle logout when clicked
+                                        onClick={toggleLogout} 
                                     />
                                 ) : (
                                     <FaUserCircle
                                         className="text-gray-400 w-12 h-12 cursor-pointer"
-                                        onClick={toggleLogout} // Toggle logout when clicked
+                                        onClick={toggleLogout} 
                                     />
                                 )}
 
