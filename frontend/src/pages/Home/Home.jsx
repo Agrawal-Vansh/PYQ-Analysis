@@ -140,7 +140,7 @@ function Home() {
     if (!loading) return;
 
     const interval = setInterval(() => {
-      setDots((prev) => (prev.length < 3 ? prev + "." : ""));
+      setDots((prev) => (prev.length < 5 ? prev + "." : ""));
     }, 500);
 
     return () => clearInterval(interval);
@@ -228,7 +228,7 @@ function Home() {
       <button
         onClick={() => extractText({ target: { files: fileList } })}
         className="px-4 py-2 bg-[#3B82F6] text-white rounded-md shadow-md mt-4 hover:bg-[#2563EB]">
-        Upload and Extract Text
+        Generate Questions
       </button>
 
       {loading && (
@@ -252,15 +252,15 @@ function Home() {
               generatePotentialQuestions();
             }
           }}
-          className=" mt-8 text-4xl font-bold text-white px-8 py-3 rounded-lg shadow-lg bg-gradient-to-r from-[#3B82F6] to-[#9333EA]"
+          className="px-4 py-2 bg-[#3B82F6] text-white rounded-md shadow-md mt-4 hover:bg-[#2563EB]"
         >
-          Generate Potential Questions
+          Find More Potential Questions
         </button>
       )}
 
       {potentialQuestions.length > 0 && (
         <div className="mt-6 w-full max-w-2xl">
-          <h2 className="text-xl font-bold text-white">Generated Potential Questions:</h2>
+          <h2 className="text-xl font-bold text-white">The Potential Questions:</h2>
           {potentialQuestions.map((question, index) => (
             <Question
               key={index}
@@ -308,9 +308,11 @@ function Home() {
 
       {/* Loading Spinner */}
       {loading && (
-        <div className="mt-6 w-full max-w-2xl bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
-          <h2 className="text-2xl font-bold text-center text-[#70a7ff]">Loading......</h2>
-        </div>
+        <div className="mt-6 w-full max-w-2xl p-6 transition-all duration-300">
+        <h2 className="text-5xl font-bold text-center text-[#70a7ff] animate-pulse">
+          Loading{dots}
+        </h2>
+      </div>
       )}
 
       {/* Summary Display */}

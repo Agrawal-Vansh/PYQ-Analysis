@@ -79,12 +79,12 @@ const Header = () => {
                                         src={profilePhoto}
                                         alt="Profile"
                                         className="rounded-full object-cover w-12 h-12 cursor-pointer"
-                                        onClick={toggleLogout} // Toggle logout when clicked
+                                        onClick={toggleLogout} 
                                     />
                                 ) : (
                                     <FaUserCircle
                                         className="text-gray-400 w-12 h-12 cursor-pointer"
-                                        onClick={toggleLogout} // Toggle logout when clicked
+                                        onClick={toggleLogout} 
                                     />
                                 )}
 
