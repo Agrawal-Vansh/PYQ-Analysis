@@ -142,7 +142,7 @@ function Dashboard() {
           </div>
         </div>
       </div>
-      <div className="bg-gray-800 p-4 rounded-lg shadow-md">{renderSubjects()}</div>
+      <div className="mt-4 bg-gray-800 p-4 rounded-lg shadow-md">{renderSubjects()}</div>
       <ToastContainer />
     </div>
   );

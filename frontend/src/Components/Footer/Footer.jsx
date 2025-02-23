@@ -29,12 +29,6 @@ const Footer = () => {
                 <div className="mt-8 text-center text-gray-400">
                     <p>Made with ❤ by <span className="font-semibold text-blue-400 text-xl">Team Code Catalysts</span></p>
                 </div>
-
-                <div className="border-t border-gray-700 mt-8 pt-8 text-center">
-                    <p className="text-gray-400">
-                        &copy; {new Date().getFullYear()} PYQ Pulse. All rights reserved.
-                    </p>
-                </div>
             </div>
         </footer>
     );

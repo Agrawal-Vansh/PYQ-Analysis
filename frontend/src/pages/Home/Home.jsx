@@ -8,7 +8,7 @@ import ReactMarkdown from "react-markdown";
 
 
 function Home() {
-  const [selectedSubject, setSelectedSubject] = useState("CN");
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [pdfText, setPdfText] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [potentialQuestions, setPotentialQuestions] = useState([]);
@@ -230,9 +230,9 @@ function Home() {
           onChange={(e) => setSelectedSubject(e.target.value)}
           className="w-full border p-2 rounded-md mt-2 bg-[#3B3B4F] text-gray-300 focus:ring-2 focus:ring-[#3B82F6] focus:outline-none"
         >
-          <option value="CN">Computer Networks</option>
-          <option value="OS">Operating Systems</option>
-          <option value="DBMS">Database Management Systems</option>
+          <option value="Computer Networks">Computer Networks</option>
+          <option value="Operating Systems">Operating Systems</option>
+          <option value="Database Management Systems">Database Management Systems</option>
         </select>
       </div>
 
@@ -265,12 +265,13 @@ function Home() {
       <div className="mt-6 w-full max-w-2xl">
         {aiResponse && renderQuestions(aiResponse)}
       </div>
-
+      {aiResponse &&
       <button
         onClick={() => saveBookMarkedQuestions()}
         className="px-4 py-2 bg-[#3B82F6] text-white rounded-md shadow-md mt-4 hover:bg-[#2563EB]">
         Save BookMarked Questions
       </button>
+}
 
       {aiResponse && (
         <button
