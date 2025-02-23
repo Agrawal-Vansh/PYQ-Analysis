@@ -118,6 +118,7 @@ export async function handleLoginUser(req, res) {
       token: jwt_token,
       email: user.email,
       name: user.name,
+      profilePhoto:user.profilePhoto,
       success: true
     });
   } catch (error) {

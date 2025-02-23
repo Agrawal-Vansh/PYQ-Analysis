@@ -47,6 +47,7 @@ function Dashboard() {
     localStorage.removeItem("token");
     handleSuccess(`${loggedInUser} Logged Out`);
     localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("profilePhoto");
     setTimeout(() => navigate("/"), 1000);
   };
 
