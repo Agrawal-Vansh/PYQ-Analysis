@@ -4,6 +4,8 @@ import pdfToText from 'react-pdftotext';
 import Question from '../../Components/QuestionBox/Question';
 import Graph from '../../Components/BarGraph/BarGraph';
 import ErrorPopUp from '../../Components/Error/Error';
+import ReactMarkdown from "react-markdown";
+
 
 function Home() {
   const [pdfText, setPdfText] = useState("");
@@ -13,6 +15,8 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState(new Set());
   const [showError, setShowError] = useState(false);
+  const [summary, setSummary] = useState('');
+  const [selectedTopic, setSelectedTopic] = useState('');
 
   const extractText = async (event) => {
     const files = event.target.files;
@@ -83,8 +87,9 @@ function Home() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data && response.data.ans) {
-        console.log("Potential Questions Response:", response.data.ans);
-        setPotentialQuestions(response.data.ans);
+        // console.log("Potential Questions Response:", response.data.ans);
+        const filteredquestions = response.data.ans.slice(1);
+        setPotentialQuestions(filteredquestions);
       } else {
         console.error("No response from AI for potential questions.");
       }
@@ -138,11 +143,57 @@ function Home() {
     return () => clearInterval(interval);
   }, [loading]);
 
+  // Topics drop down 
+
+
+
+
+   // Function to handle the change of the selected topic
+   const handleTopicChange = (event) => {
+     setSelectedTopic(event.target.value);
+   };
+
+   const topics = [
+    'CPU Scheduling',
+    'System Programming',
+    'Deadlock',
+    'Memory Management',
+    'Resource Allocation',
+    'Synchronization',
+  ];
+
+  const generateSummary = async () => {
+    if (!selectedTopic) {
+      alert('Please select a topic');
+      return;
+    }
+
+    setLoading(true); // Start loading
+
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_URL}/api/ai/summary`, {
+        topic: selectedTopic
+      });
+      console.log(response);
+      
+      if (response.data) {
+        // Exclude the first item (index 0) from the array
+        const filteredSummary = response.data.ans.slice(1);
+        setSummary(filteredSummary);
+      } else {
+        console.error('No summary returned from the API');
+      }
+    } catch (error) {
+      console.error('Error generating summary:', error);
+    } finally {
+      setLoading(false); // Stop loading once the request is complete
+    }
+  };
   return (
     <div className="min-h-screen flex flex-col items-center bg-[#1E1E2E] p-8">
       <h1 className="text-4xl font-bold text-white px-8 py-3 rounded-lg shadow-lg 
                      bg-gradient-to-r from-[#3B82F6] to-[#9333EA]">
-        PDF Text Extractor
+        PYQ Question Anaylizer
       </h1>
 
       <div className="bg-[#2A2A3A] p-6 my-6 w-full max-w-lg shadow-lg rounded-xl border border-[#3B3B4F]">
@@ -184,7 +235,7 @@ function Home() {
               generatePotentialQuestions();
             }
           }}
-          className="px-4 py-2 bg-[#9333EA] text-white rounded-md shadow-md mt-4 hover:bg-[#7E22CE]"
+          className=" mt-8 text-4xl font-bold text-white px-8 py-3 rounded-lg shadow-lg bg-gradient-to-r from-[#3B82F6] to-[#9333EA]"
         >
           Generate Potential Questions
         </button>
@@ -206,7 +257,62 @@ function Home() {
 
       {aiResponse && <Graph />}
       {showError && <ErrorPopUp onClose={() => setShowError(false)} />}
+
+     {    aiResponse &&
+      <div className="min-h-screen flex flex-col items-center bg-[#1E1E2E] p-8">
+      <h1 className="text-4xl font-bold text-white px-8 py-3 rounded-lg shadow-lg bg-gradient-to-r from-[#3B82F6] to-[#9333EA]">
+        Topic Summary Generator
+      </h1>
+
+      {/* Topic Selection Dropdown */}
+      <div className="mt-6 w-full max-w-lg bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
+        <h3 className="text-lg font-semibold text-gray-200">Select a Topic:</h3>
+        <select
+          value={selectedTopic}
+          onChange={handleTopicChange}
+          className="w-full border p-2 rounded-md mt-2 bg-[#3B3B4F] text-gray-300 focus:ring-2 focus:ring-[#3B82F6] focus:outline-none"
+        >
+          <option value="">-- Choose a Topic --</option>
+          {topics.map((topic, index) => (
+            <option key={index} value={topic}>
+              {topic}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Button to Generate Summary */}
+      <button
+        onClick={generateSummary}
+        className="px-4 py-2 bg-[#3B82F6] text-white rounded-md shadow-md mt-4 hover:bg-[#2563EB]"
+      >
+        Generate Summary
+      </button>
+
+      {/* Loading Spinner */}
+      {loading && (
+        <div className="mt-6 w-full max-w-2xl bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
+          <h2 className="text-2xl font-bold text-center text-[#70a7ff]">Loading......</h2>
+        </div>
+      )}
+
+      {/* Summary Display */}
+      {summary.length > 0 && !loading && (
+        <div className="mt-6 w-full max-w-2xl bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
+        <h3 className="text-xl font-semibold text-[#3B82F6] mb-4">Summary for {selectedTopic}:</h3>
+        <ul className="list-disc p-4 space-y-2 text-lg">
+          {summary.map((item, index) => (
+            <li key={index} className="text-gray-300 mb-2">
+              <ReactMarkdown>{item}</ReactMarkdown>
+            </li>
+          ))}
+        </ul>
+      </div>
+      )}
     </div>
+    }
+    </div>
+    
   );
 }
 
