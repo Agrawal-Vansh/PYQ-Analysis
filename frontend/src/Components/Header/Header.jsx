@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
 import { handleSuccess, handleError } from "../../utils";
 import { ToastContainer } from "react-toastify";
+import logo from "../../assets/logo.jpg"; // Import the logo
 
 const Header = () => {
     const [loggedInUser, setLoggedInUser] = useState(null);
@@ -40,29 +41,22 @@ const Header = () => {
     return (
         <header className="bg-gray-800 text-gray-100 py-4 shadow-lg">
             <div className="container mx-auto flex flex-wrap items-center justify-between px-5">
+                {/* Logo and Brand Name */}
                 <a className="flex items-center text-gray-100 hover:text-gray-300">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        className="w-10 h-10 text-white p-2 bg-blue-500 rounded-full"
-                        viewBox="0 0 24 24"
-                    >
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                    </svg>
-                    <span className="ml-3 text-xl font-bold">Tailblocks</span>
+                    <img
+                        src={logo} // Use the imported logo
+                        alt="PYQ Pulse Logo"
+                        className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <span className="ml-3 text-xl font-bold">PYQ Pulse</span>
                 </a>
 
-                {/* Navigation Links */}
-                <nav className="hidden md:flex items-center space-x-8">
-                    <a href="#" className="hover:text-gray-300 transition duration-300">First Link</a>
-                    <a href="#" className="hover:text-gray-300 transition duration-300">Second Link</a>
-                    <a href="#" className="hover:text-gray-300 transition duration-300">Third Link</a>
-                    <a href="#" className="hover:text-gray-300 transition duration-300">Fourth Link</a>
-                </nav>
+                {/* Quote Section */}
+                <div className="hidden md:flex items-center">
+                    <p className="text-2xl font-medium bg-gradient-to-r from-slate-100 to-slate-200 italic bg-clip-text text-transparent">
+                        Fuel Your Academic Ambitions
+                    </p>
+                </div>
 
                 {/* Profile and Dashboard Button */}
                 <div className="flex items-center space-x-4">
@@ -88,7 +82,6 @@ const Header = () => {
                                     />
                                 )}
 
-                                {/* Logout Button (visible when showLogout is true) */}
                                 {showLogout && (
                                     <button
                                         className="absolute top-14 right-0 mt-2 bg-gradient-to-r from-[#EF4444] to-[#B91C1C] text-white py-2 px-4 rounded-lg hover:from-red-600 hover:to-red-800"
@@ -101,7 +94,6 @@ const Header = () => {
                         </>
                     )}
 
-                    {/* Conditional Buttons for Login/Logout */}
                     {!loggedInUser ? (
                         <>
                             <button className="btn" onClick={() => navigate("/register")}>
@@ -115,7 +107,6 @@ const Header = () => {
                 </div>
             </div>
 
-            {/* Custom Button Styles */}
             <style jsx> {
                 `.btn {
                     --border-color: linear-gradient(-45deg, #ffae00, #7e03aa, #00fffb);
