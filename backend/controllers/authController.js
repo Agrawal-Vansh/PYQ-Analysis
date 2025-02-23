@@ -82,25 +82,25 @@ export async function handleLoginUser(req, res) {
   try {
     console.log("Starting Google Auth Callback");
     const { token } = req.query;
-    console.log("Token received:", token);
+    // console.log("Token received:", token);
 
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
-    console.log("Google token verified");
+    // console.log("Google token verified");
 
     const payload = ticket.getPayload();
     const { email, name, picture } = payload;
-    console.log("Payload ", payload);
+    // console.log("Payload ", payload);
     
-    console.log("Payload extracted:", { email, name});
+    // console.log("Payload extracted:", { email, name});
 
     let user = await User.findOne({ email });
-    console.log("User found:", user);
+    // console.log("User found:", user);
 
     if (!user) {
-      console.log("User not found, creating new user");
+      // console.log("User not found, creating new user");
       const hashedPassword = await bcrypt.hash("Google Login", 10);
       user = await User.create({ name, email, password: hashedPassword,profilePhoto:picture });
       console.log("User created:", user);
@@ -111,7 +111,7 @@ export async function handleLoginUser(req, res) {
       process.env.JWT_SECRET,
       { expiresIn: '5h' }
     );
-    console.log("JWT token generated");
+    // console.log("JWT token generated");
 
     return res.status(200).json({
       message: 'Login successful',
