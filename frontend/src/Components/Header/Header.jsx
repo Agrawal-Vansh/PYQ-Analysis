@@ -91,7 +91,7 @@ const Header = () => {
                                 {/* Logout Button (visible when showLogout is true) */}
                                 {showLogout && (
                                     <button
-                                        className="absolute top-14 right-0 mt-2 bg-red-600 text-white py-2 px-4 rounded-lg"
+                                        className="absolute top-14 right-0 mt-2 bg-gradient-to-r from-[#EF4444] to-[#B91C1C] text-white py-2 px-4 rounded-lg hover:from-red-600 hover:to-red-800"
                                         onClick={handleLogout}
                                     >
                                         Logout
