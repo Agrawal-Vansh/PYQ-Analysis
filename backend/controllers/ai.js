@@ -21,7 +21,6 @@ export const handleAiResponse = async (req, res) => {
       1. The extracted questions should be clearly structured and free from unnecessary text.
       2. If a question is split across multiple lines, combine them properly.
       3. Ignore any non-question content such as instructions, numbers, or formatting artifacts.
-
       Here is the extracted text:
       ${extractedText}
       
@@ -32,7 +31,9 @@ export const handleAiResponse = async (req, res) => {
     const result = await model.generateContent(prompt);
     const responseText = result.response.text(); // Extract AI's response
 
-    console.log("Gemini Response:", responseText);
+    // console.log("Gemini Response:", responseText);
+    console.log("Gemini Response Received");
+    
     
     // Parse JSON response
 

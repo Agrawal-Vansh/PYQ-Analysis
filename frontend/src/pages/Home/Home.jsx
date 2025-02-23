@@ -1,33 +1,72 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import pdfToText from 'react-pdftotext';
+import { CiBookmark } from "react-icons/ci";  // Import unbookmarked icon
+import { FaBookmark } from "react-icons/fa";  // Import bookmarked icon
 import Graph from '../../Components/BarGraph/BarGraph';
+
+// Question Component to render each individual question
+function Question({ question, onBookmarkToggle, isBookmarked }) {
+  return (
+    <div className="mt-4 w-full max-w-2xl bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold text-[#3B82F6]">{question}</h3>
+        <button onClick={onBookmarkToggle}>
+          {isBookmarked ? (
+            <FaBookmark className="text-yellow-500" size={24} />
+          ) : (
+            <CiBookmark className="text-gray-300" size={24} />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function Home() {
   const [pdfText, setPdfText] = useState("");
   const [aiResponse, setAiResponse] = useState("");
+  const [fileList, setFileList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [bookmarkedQuestions, setBookmarkedQuestions] = useState(new Set()); // Track bookmarked questions
 
-  const extractText = (event) => {
-    const file = event.target.files[0];
-
-    if (!file) {
-      console.error("No file selected.");
+  const extractText = async (event) => {
+    const files = event.target.files;
+    if (!files.length) {
+      console.error("No files selected.");
       return;
     }
 
-    try {
-      console.log("Starting to extract text from the PDF...");
-      pdfToText(file)
+    setLoading(true); // Set loading to true while extracting
+    const textPromises = [];
+
+    // Loop through all selected files
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      // Make sure to process each file and extract its text
+      const textPromise = pdfToText(file)
         .then(text => {
-          console.log("Text extracted successfully.");
-          setPdfText(text);
-          sendTextToAI(text);
+          console.log(`Text extracted successfully from file: ${file.name}`);
+          return { fileName: file.name, text };
         })
         .catch(error => {
-          console.error("Error during text extraction:", error);
+          console.error(`Error during text extraction for ${file.name}:`, error);
+          return { fileName: file.name, text: 'Error extracting text' };
         });
+
+      textPromises.push(textPromise);
+    }
+
+    try {
+      const texts = await Promise.all(textPromises); // Await all promises to resolve
+      const combinedText = texts.map(item => `File: ${item.fileName}\n${item.text}`).join("\n\n");
+      setPdfText(combinedText);
+      await sendTextToAI(combinedText); // Await the sendTextToAI call to ensure it completes before finishing
     } catch (error) {
-      console.error("An error occurred while processing the PDF file:", error);
+      console.error("Error processing files:", error);
+    } finally {
+      setLoading(false); // Stop loading after processing is done, whether successful or not
     }
   };
 
@@ -43,14 +82,44 @@ function Home() {
       }
     } catch (error) {
       console.error("Error sending text to AI:", error);
+    } finally {
+      setLoading(false); // Stop loading after AI response
     }
   };
 
-  const renderTextLines = (text) => {
-    const lines = text.split('\n');
-    return lines.map((line, index) => (
-      <p key={index} className="text-gray-300 mb-2">{line}</p>
+  // Toggle Bookmark function
+  const toggleBookmark = (questionIndex) => {
+    setBookmarkedQuestions(prevState => {
+      const newState = new Set(prevState);
+      if (newState.has(questionIndex)) {
+        newState.delete(questionIndex); // Remove bookmark
+      } else {
+        newState.add(questionIndex); // Add bookmark
+      }
+      return newState;
+    });
+  };
+
+  // Function to render each question in its own div
+  const renderQuestions = (text) => {
+    const questions = text.split('\n'); // Split the text by line
+
+    // Iterate over each line/question and render it separately
+    return questions.map((question, index) => (
+      // Check if the question is not an empty string
+      question.trim() !== "" && (
+        <Question
+          key={index}
+          question={question}
+          isBookmarked={bookmarkedQuestions.has(index)} // Check if this question is bookmarked
+          onBookmarkToggle={() => toggleBookmark(index)} // Toggle bookmark state
+        />
+      )
     ));
+  };
+
+  const handleFileUpload = (event) => {
+    setFileList([...event.target.files]);
   };
 
   return (
@@ -63,34 +132,43 @@ function Home() {
 
       {/* Upload Section */}
       <div className="bg-[#2A2A3A] p-6 my-6 w-full max-w-lg shadow-lg rounded-xl border border-[#3B3B4F]">
-        <h3 className="text-lg font-semibold text-gray-200">Upload PDF:</h3>
+        <h3 className="text-lg font-semibold text-gray-200">Upload PDF Files:</h3>
         <input 
           type="file" 
           accept="application/pdf" 
-          onChange={extractText}
+          multiple // Allow multiple file uploads
+          onChange={handleFileUpload}
           className="w-full border p-2 rounded-md mt-2 bg-[#3B3B4F] text-gray-300 focus:ring-2 focus:ring-[#3B82F6] focus:outline-none"
         />
       </div>
 
+      <button 
+        onClick={() => extractText({ target: { files: fileList } })} 
+        className="px-4 py-2 bg-[#3B82F6] text-white rounded-md shadow-md mt-4 hover:bg-[#2563EB]">
+        Upload and Extract Text
+      </button>
+
       {/* Loading Message */}
-      {pdfText && !aiResponse && (
+      {loading && (
         <div className="mt-6 w-full max-w-2xl bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
-          <h2 className="text-2xl font-bold text-center text-[#3B82F6]">Loading......</h2>
+          <h2 className="text-2xl font-bold text-center text-[#70a7ff]">Loading......</h2>
         </div>
       )}
 
-      {/* AI Response Section */}
-      {aiResponse && (
-        <div className="mt-6 w-full max-w-2xl bg-[#2A2A3A] p-6 shadow-lg rounded-xl border border-[#3B3B4F]">
-          <h2 className="text-2xl font-bold text-center text-[#3B82F6]">🧠 AI-Processed Response</h2>
-          <div className="mt-2 text-gray-300 p-3 border rounded bg-[#3B3B4F]">
-            {renderTextLines(aiResponse)}
-          </div>
-        </div>
-      )}
+      {/* Render the extracted questions */}
+      <div className="mt-6 w-full max-w-2xl">
+        {aiResponse && renderQuestions(aiResponse)} {/* Render each question in its own div */}
+      </div>
+
+      {/* checking to reduce API Load  */}
+      {/* <div className="mt-6 w-full max-w-2xl">
+        Render each question in its own div
+        {renderQuestions(pdfText)} 
+      </div> */}
 
       {/* Graph Component */}
-      <Graph />
+      {aiResponse &&     <Graph />}
+   
     </div>
   );
 }
