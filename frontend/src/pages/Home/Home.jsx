@@ -6,6 +6,7 @@ import Graph from '../../Components/BarGraph/BarGraph';
 import ErrorPopUp from '../../Components/Error/Error';
 
 function Home() {
+  const [selectedSubject, setSelectedSubject] = useState("CN");
   const [pdfText, setPdfText] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [potentialQuestions, setPotentialQuestions] = useState([]);
@@ -55,7 +56,7 @@ function Home() {
   const sendTextToAI = async (extractedText) => {
     try {
       console.log("Sending extracted text to AI...");
-      const response = await axios.post(`${import.meta.env.VITE_URL}/api/ai/extract`, { extractedText });
+      const response = await axios.post(`${import.meta.env.VITE_URL}/api/ai/extract`, { extractedText, subject: selectedSubject });
       if (response.data && response.data.ans) {
         console.log("AI Response:", response.data.ans);
         setAiResponse(response.data.ans);
@@ -74,6 +75,7 @@ function Home() {
       const token = localStorage.getItem("token");
       console.log("Sending request for potential questions...");
       const response = await axios.post(`${import.meta.env.VITE_URL}/api/ai/potentialQuestions`, {
+        subject: selectedSubject,
         "questions": [
           "What is the operating system?",
           "How does virtual memory work?",
@@ -127,6 +129,7 @@ function Home() {
   };
 
   const [dots, setDots] = useState("");
+  console.log(bookmarkedQuestions);
 
   useEffect(() => {
     if (!loading) return;
@@ -145,7 +148,22 @@ function Home() {
         PDF Text Extractor
       </h1>
 
-      <div className="bg-[#2A2A3A] p-6 my-6 w-full max-w-lg shadow-lg rounded-xl border border-[#3B3B4F]">
+      {/* Subject Dropdown */}
+      <div className="bg-[#2A2A3A] p-6 my-4 w-full max-w-lg shadow-lg rounded-xl border border-[#3B3B4F]">
+        <h3 className="text-lg font-semibold text-gray-200">Select Subject:</h3>
+        <select
+          value={selectedSubject}
+          onChange={(e) => setSelectedSubject(e.target.value)}
+          className="w-full border p-2 rounded-md mt-2 bg-[#3B3B4F] text-gray-300 focus:ring-2 focus:ring-[#3B82F6] focus:outline-none"
+        >
+          <option value="CN">Computer Networks</option>
+          <option value="OS">Operating Systems</option>
+          <option value="DBMS">Database Management Systems</option>
+        </select>
+      </div>
+
+      {/* File Upload Section */}
+      <div className="bg-[#2A2A3A] p-6 my-4 w-full max-w-lg shadow-lg rounded-xl border border-[#3B3B4F]">
         <h3 className="text-lg font-semibold text-gray-200">Upload PDF Files:</h3>
         <input
           type="file"
@@ -180,7 +198,6 @@ function Home() {
             if (!localStorage.getItem("loggedInUser")) {
               setShowError(true);
             } else {
-              
               generatePotentialQuestions();
             }
           }}
