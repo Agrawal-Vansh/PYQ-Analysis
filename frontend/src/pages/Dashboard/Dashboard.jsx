@@ -68,7 +68,7 @@ function Dashboard() {
 
     return (
       <div className="mt-4">
-        <h3 className="text-center text-white text-3xl font-bold mb-4">Subjects</h3>
+        <h3 className="text-center text-white text-3xl font-bold mb-4">Favourite Questions</h3>
         <ul className="list-disc pl-5 text-gray-300">
           {Object.entries(userDetails.subjects).map(([subject, questions]) => (
             <li key={subject} className="mb-4">

@@ -5,6 +5,7 @@ import Question from '../../Components/QuestionBox/Question';
 import Graph from '../../Components/BarGraph/BarGraph';
 import ErrorPopUp from '../../Components/Error/Error';
 import ReactMarkdown from "react-markdown";
+import { handleSuccess } from "../../utils";
 
 
 function Home() {
@@ -31,13 +32,13 @@ function Home() {
         `${import.meta.env.VITE_URL}/api/user/add`,
         {
           subjectName: selectedSubject,
-          questions: [...bookmarkedQuestions], // Ensure we pass a new array
+          questions: bookmarkedQuestions,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
+      handleSuccess(`Added To Favourites`);
       console.log("Success:", response.data);
     } catch (err) {
       console.error("Error:", err.response?.data || err.message);
@@ -295,8 +296,8 @@ function Home() {
             <Question
               key={index}
               question={question.replace("* ", "")}
-              isBookmarked={bookmarkedQuestions.has(index)}
-              onBookmarkToggle={() => toggleBookmark(index)}
+              isBookmarked={bookmarkedQuestions.includes(question)}
+              onBookmarkToggle={() => toggleBookmark(question)}
             />
           ))}
         </div>
