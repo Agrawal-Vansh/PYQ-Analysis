@@ -1,31 +1,50 @@
 import React from "react";
 import { FaGithub, FaTwitter, FaLinkedin } from "react-icons/fa";
+
 const Footer = () => {
     return (
-        <footer className="bg-gray-800 py-8 shadow-lg">
+        <footer className="bg-gray-800 py-12 shadow-lg border-t border-gray-700">
             <div className="container mx-auto px-4">
-                <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8">
-                    <div className="text-center md:text-left md:w-1/2">
-                        <h3 className="text-xl font-bold text-gray-100 mb-4">About Us</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {/* About Us Section */}
+                    <div className="text-center md:text-left">
+                        <h3 className="text-2xl font-bold text-gray-100 mb-4">About Us</h3>
                         <p className="text-gray-400">
-                            We are dedicated to providing the best experience for our users. Join us and explore the world of possibilities.
+                            At <span className="font-semibold text-blue-400">PYQ Pulse</span>, we are passionate about helping students achieve academic excellence. Our platform provides access to past year question papers, AI-generated insights, and a collaborative community to fuel your academic ambitions.
                         </p>
                     </div>
 
-                    <div className="text-center md:w-1/2">
-                        <h3 className="text-xl font-bold text-gray-100 mb-4">Follow Us</h3>
-                        <div className="flex justify-center space-x-6">
-                            <a href="#" className="text-gray-400 hover:text-blue-500 transition duration-300">
+                    {/* Follow Us Section */}
+                    <div className="text-right"> {/* Align text to the right */}
+                        <h3 className="text-2xl font-bold text-gray-100 mb-4">Follow Us</h3>
+                        <div className="flex justify-end space-x-6"> {/* Align icons to the right */}
+                            <span
+                                className="text-gray-400 hover:text-blue-500 transition duration-300 cursor-pointer"
+                                aria-label="GitHub"
+                            >
                                 <FaGithub className="h-6 w-6" />
-                            </a>
-                            <a href="#" className="text-gray-400 hover:text-blue-500 transition duration-300">
+                            </span>
+                            <span
+                                className="text-gray-400 hover:text-blue-500 transition duration-300 cursor-pointer"
+                                aria-label="Twitter"
+                            >
                                 <FaTwitter className="h-6 w-6" />
-                            </a>
-                            <a href="#" className="text-gray-400 hover:text-blue-500 transition duration-300">
+                            </span>
+                            <span
+                                className="text-gray-400 hover:text-blue-500 transition duration-300 cursor-pointer"
+                                aria-label="LinkedIn"
+                            >
                                 <FaLinkedin className="h-6 w-6" />
-                            </a>
+                            </span>
                         </div>
                     </div>
+                </div>
+
+                {/* Copyright Section */}
+                <div className="border-t border-gray-700 mt-8 pt-8 text-center">
+                    <p className="text-gray-400">
+                        &copy; {new Date().getFullYear()} PYQ Pulse. All rights reserved.
+                    </p>
                 </div>
             </div>
         </footer>

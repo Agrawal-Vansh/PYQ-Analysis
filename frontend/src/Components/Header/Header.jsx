@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
@@ -11,6 +11,7 @@ const Header = () => {
     const [profilePhoto, setProfilePhoto] = useState(null);
     const [showLogout, setShowLogout] = useState(false); // Added state for showing logout
     const navigate = useNavigate();
+    const profileRef = useRef(null); // Ref for the profile icon/logout button
     const location = useLocation();
 
     // Fetch user data from localStorage initially
@@ -39,6 +40,23 @@ const Header = () => {
     const toggleLogout = () => {
         setShowLogout(!showLogout);
     };
+
+    // Close logout button when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (profileRef.current && !profileRef.current.contains(event.target)) {
+                setShowLogout(false); // Hide logout button
+            }
+        };
+
+        // Add event listener
+        document.addEventListener("mousedown", handleClickOutside);
+
+        // Cleanup
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     return (
         <header className="bg-gray-800 text-gray-100 py-4 shadow-lg">
@@ -69,7 +87,7 @@ const Header = () => {
                                 {location.pathname === "/dashboard" ? "Home" : "Dashboard"}
                             </button>
                             {/* Profile Photo or Icon */}
-                            <div className="relative">
+                            <div className="relative" ref={profileRef}>
                                 {profilePhoto ? (
                                     <img
                                         src={profilePhoto}
@@ -84,9 +102,10 @@ const Header = () => {
                                     />
                                 )}
 
+                                {/* Logout Button (visible when showLogout is true) */}
                                 {showLogout && (
                                     <button
-                                        className="absolute top-14 right-0 mt-2 bg-gradient-to-r from-[#EF4444] to-[#B91C1C] text-white py-2 px-4 rounded-lg hover:from-red-600 hover:to-red-800"
+                                        className="absolute top-14 right-0 mt-2 bg-gradient-to-r from-purple-600 to-blue-500 text-white py-2 px-4 rounded-lg hover:from-purple-700 hover:to-blue-600 transition-all duration-300"
                                         onClick={handleLogout}
                                     >
                                         Logout
