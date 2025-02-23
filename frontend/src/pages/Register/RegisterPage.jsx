@@ -65,11 +65,12 @@ const RegisterPage = () => {
         params: { token: googleToken },
       });
 
-      const { message, name, token } = res.data;
+      const { message, name, token,profilePhoto} = res.data;
 
       // Store token and user details in localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("loggedInUser", name);
+      localStorage.setItem("profilePhoto",profilePhoto);
 
       // Set default Authorization header for Axios
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
